@@ -5,32 +5,31 @@ A Streamlit-based application for finding similar financial products based on we
 ## Features
 
 - Search products by name or ISIN
-- View detailed product information
+- View detailed product information organized in categories:
+  - Basic Information (ISIN, Product Name, Asset Class, Product Type)
+  - Risk and Market Information (Risk Level, Minimum Lot, Private Markets)
+  - Satisfactions (Income, Multi Manager, Growth, etc.)
 - Find similar products using a weighted distance metric
+- Display similarity scores as percentages
+- Compact and organized display format
 - Interactive web interface
-- Support for both numerical and categorical features
 
-## Feature Weights
+## Similarity Calculation
 
-The similarity calculation uses different weights for different types of features:
+The similarity calculation uses different weights and distance metrics for different types of features:
 
-### High Weight Features (Weight: 1.0)
-- Income
-- Multimanager
-- Growth
-- Lifestyle
-- IG Planning
-- Protection
-- Retirement
-- Active Management
-- Tax Optimization
-- ESG
-- Risk Level
-- Private Markets
+### Satisfactions (50% weight)
+- Uses L2 distance on normalized values (0-100)
+- Features: Income, Multi Manager, Growth, Lifestyle, IG Planning, Protection, Retirement, Active Management, Tax Optimization, ESG
 
-### Low Weight Features (Weight: 0.5)
-- Asset Class
-- Product Type (Tipologia Prodotto)
+### Risk Level (20% weight)
+- Uses L2 distance on normalized values (1-7)
+
+### Private Markets (20% weight)
+- Uses Jaccard distance (binary comparison)
+
+### Asset Class and Product Type (5% each)
+- Uses Jaccard distance for categorical comparison
 
 ## Setup
 
@@ -63,7 +62,8 @@ streamlit run app.py
 3. To find similar products:
    - Use the search box to filter products by name or ISIN
    - Select a product from the dropdown menu
-   - Click "Find Similar Products" to see the 5 most similar products
+   - View the selected product's details organized in categories
+   - Click "Find Similar Products" to see the 5 most similar products with their similarity scores
 
 ## Data
 
@@ -72,7 +72,23 @@ The application uses a CSV file (`gamma_funds_20250611.csv`) containing financia
 ## Requirements
 
 - Python 3.8+
-- Dependencies listed in requirements.txt
+- Dependencies listed in requirements.txt:
+  - streamlit
+  - pandas
+  - numpy
+  - scikit-learn
+  - watchdog (optional, for better performance)
+
+## Configuration
+
+The application uses a `config.py` file to store:
+- Feature weights for different categories
+- Value ranges for normalization
+- Feature groupings
+
+You can adjust the weights and other parameters by modifying this file.
 
 ## License
+
+[Add your license information here]
 
