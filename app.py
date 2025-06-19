@@ -72,7 +72,7 @@ def weighted_distance(x1, x2):
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("gamma_funds_20250611.csv")
+    df = pd.read_csv("gamma_funds.csv")
     # Filter for investable products right at the start
     df = df[df['is_universo_investibile'] == 1].reset_index(drop=True)
     

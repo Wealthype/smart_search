@@ -67,7 +67,7 @@ streamlit run app.py
 
 ## Data
 
-The application uses a CSV file (`gamma_funds_20250611.csv`) containing financial product data. The data is filtered to only include investable products (`is_universo_investibile == 1`).
+The application uses a CSV file (`gamma_funds.csv`) containing financial product data. The data is filtered to only include investable products (`is_universo_investibile == 1`).
 
 ## Requirements
 
