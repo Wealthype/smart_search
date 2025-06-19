@@ -83,11 +83,17 @@ def load_data():
     
     return df
 
+@st.cache_data
+def load_goalbased():
+    """Load goal-based portfolio data."""
+    return pd.read_csv("goalbased_ptfs.csv")
+
 # Set page config
 st.set_page_config(page_title="Smart Product Search", layout="wide")
 
 # Load data
 df = load_data()
+ptf_df = load_goalbased()
 
 # Create a title
 st.title("Smart Product Search")
@@ -107,6 +113,10 @@ private_market_option = st.sidebar.selectbox(
 asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
 selected_asset_classes = st.sidebar.multiselect("Asset Class:", asset_classes)
 
+# Model portfolio filter
+ptf_options = ['All'] + sorted(ptf_df['kpi_portfolio_id'].dropna().unique())
+selected_ptf = st.sidebar.selectbox("Ptf Modello:", ptf_options, index=0)
+
 # Filter products based on user input
 filtered_df = df
 if search_query:
@@ -122,6 +132,10 @@ elif private_market_option == "No":
 
 if selected_asset_classes:
     filtered_df = filtered_df[filtered_df['asset_class_to_report'].isin(selected_asset_classes)]
+
+if selected_ptf != 'All':
+    ptf_codes = ptf_df[ptf_df['kpi_portfolio_id'] == selected_ptf]['codiceProdotto_frontoffice'].astype(str)
+    filtered_df = filtered_df[filtered_df['codiceProdotto_frontoffice'].astype(str).isin(ptf_codes)]
 
 product_options = filtered_df.apply(
     lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1
