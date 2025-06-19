@@ -5,8 +5,10 @@ A Streamlit-based application for finding similar financial products based on we
 ## Features
 
 - Search products by name or ISIN
+- Filter results by Ptf Modello (including an option to show only products present in any portfolio)
+- Asset Class (`asset_class_to_report`) and Private Markets filters available in a collapsed "Advanced Filters" section
 - View detailed product information organized in categories:
-  - Basic Information (ISIN, Product Name, Asset Class, Product Type)
+  - Basic Information (ISIN, Product Name, Asset Class (`asset_class_to_report`), Product Type)
   - Risk and Market Information (Risk Level, Minimum Lot, Private Markets)
   - Satisfactions (Income, Multi Manager, Growth, etc.)
 - Find similar products using a weighted distance metric
@@ -61,9 +63,10 @@ streamlit run app.py
 
 3. To find similar products:
    - Use the search box to filter products by name or ISIN
-   - Select a product from the dropdown menu
-   - View the selected product's details organized in categories
-   - Click "Find Similar Products" to see the 5 most similar products with their similarity scores
+   - Choose a Ptf Modello or the "Any Portfolio" option to restrict results
+   - Expand **Advanced Filters** to filter by Asset Class or Private Markets if needed
+   - Select a product from the results list on the left
+   - View the selected product's details on the right and click **Find Similar Products** to see the five most similar products
 
 ## Data
 
