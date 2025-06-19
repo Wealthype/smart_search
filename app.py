@@ -140,24 +140,28 @@ elif private_market_option == "No":
 if selected_asset_classes:
     filtered_df = filtered_df[filtered_df['asset_class_to_report'].isin(selected_asset_classes)]
 
-product_options = filtered_df.apply(
-    lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1
-).tolist()
+# Build a compact table of results so users can scroll through them
+results_table = filtered_df[
+    ["nomeProdotto_frontoffice", "ISIN", "asset_class_to_report"]
+].reset_index(drop=True)
+
+product_options = results_table["ISIN"].tolist()
 
 results_col, details_col = st.columns([2, 3])
 
 with results_col:
     st.subheader("Search Results")
-    if product_options:
-        selected_product = st.radio("Select a product:", product_options, key="product_radio")
+    if not results_table.empty:
+        st.dataframe(results_table, use_container_width=True)
+        selected_isin = st.selectbox(
+            "Choose a product by ISIN:", product_options, key="product_select"
+        )
     else:
         st.write("No results found.")
-        selected_product = None
+        selected_isin = None
 
 with details_col:
-    if selected_product:
-        # Extract ISIN from the selected product string
-        selected_isin = selected_product.split("(")[-1].strip(")")
+    if selected_isin:
         selected_product_data = df[df['ISIN'] == selected_isin].iloc[0]
 
         header_col, button_col = st.columns([3,1])
