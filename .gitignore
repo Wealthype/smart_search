@@ -1,0 +1,15 @@
+# Ignore macOS and Python specific files
+.DS_Store
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+*.sqlite3
+*.db
+*.log
+.env
+.venv
+build/
+dist/
+.ipynb_checkpoints/

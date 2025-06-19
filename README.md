@@ -14,6 +14,7 @@ A Streamlit-based application for finding similar financial products based on we
 - Find similar products using a weighted distance metric
 - Display similarity scores as percentages
 - Compact and organized display format
+- Search results shown in a scrollable table with a drop-down selector for choosing a product
 - Interactive web interface
 
 ## Similarity Calculation
@@ -65,7 +66,7 @@ streamlit run app.py
    - Use the search box to filter products by name or ISIN
    - Choose a Ptf Modello or the "Any Portfolio" option to restrict results
    - Expand **Advanced Filters** to filter by Asset Class or Private Markets if needed
-   - Select a product from the results list on the left
+   - Scroll through the results table on the left and choose a product by ISIN using the drop-down list below it
    - View the selected product's details on the right and click **Find Similar Products** to see the five most similar products
 
 ## Data
