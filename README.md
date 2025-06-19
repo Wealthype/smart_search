@@ -69,6 +69,20 @@ streamlit run app.py
 
 The application uses a CSV file (`gamma_funds_20250611.csv`) containing financial product data. The data is filtered to only include investable products (`is_universo_investibile == 1`).
 
+### Updating the investible flag
+
+If you need to update the `is_universo_investibile` column based on a portfolio
+file, use the `update_investible.py` script:
+
+```bash
+python update_investible.py goalbased_ptfs_20250611.csv gamma_funds_20250611.csv -o gamma_funds_updated.csv
+```
+
+The script reads product codes from `goalbased_ptfs_20250611.csv` (column
+`codiceProdotto_frontoffice`) and sets the flag to `1` for any matching rows in
+the gamma funds dataset. The updated file is written to the path provided with
+`-o` (if omitted, the original file is overwritten).
+
 ## Requirements
 
 - Python 3.8+
