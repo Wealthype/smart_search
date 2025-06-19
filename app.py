@@ -92,121 +92,135 @@ df = load_data()
 # Create a title
 st.title("Smart Product Search")
 
-# Create two columns for the layout
-col1, col2 = st.columns([2, 3])
+# Sidebar for all search controls
+st.sidebar.header("Search Filters")
 
-with col1:
-    # Create a search box
-    search_query = st.text_input("Search by name or ISIN:", key="search")
-    
-    # Filter products based on search
-    if search_query:
-        filtered_df = df[
-            df['nomeProdotto_frontoffice'].str.contains(search_query, case=False, na=False) |
-            df['ISIN'].astype(str).str.contains(search_query, case=False, na=False)
-        ]
-    else:
-        filtered_df = df
-    
-    # Create a dropdown with product names and ISINs
-    product_options = filtered_df.apply(lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1).tolist()
-    selected_product = st.selectbox("Select a product:", product_options)
-    
-    # Add a button to find similar products
-    find_similar = st.button("Find Similar Products")
+# Text search
+search_query = st.sidebar.text_input("Search by name or ISIN:", key="search")
 
-with col2:
-    if selected_product:
-        # Extract ISIN from the selected product string
-        selected_isin = selected_product.split("(")[-1].strip(")")
-        selected_product_data = df[df['ISIN'] == selected_isin].iloc[0]
+# Private markets filter
+private_market_option = st.sidebar.selectbox(
+    "Private Markets:", ["All", "Yes", "No"], index=0
+)
+
+# Asset class filter
+asset_classes = sorted(df['Asset Class'].dropna().unique())
+selected_asset_classes = st.sidebar.multiselect("Asset Class:", asset_classes)
+
+# Filter products based on user input
+filtered_df = df
+if search_query:
+    filtered_df = filtered_df[
+        filtered_df['nomeProdotto_frontoffice'].str.contains(search_query, case=False, na=False) |
+        filtered_df['ISIN'].astype(str).str.contains(search_query, case=False, na=False)
+    ]
+
+if private_market_option == "Yes":
+    filtered_df = filtered_df[filtered_df['is_private_markets'] == 1]
+elif private_market_option == "No":
+    filtered_df = filtered_df[filtered_df['is_private_markets'] == 0]
+
+if selected_asset_classes:
+    filtered_df = filtered_df[filtered_df['Asset Class'].isin(selected_asset_classes)]
+
+product_options = filtered_df.apply(
+    lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1
+).tolist()
+selected_product = st.sidebar.selectbox("Select a product:", product_options)
+
+# Add a button to find similar products
+find_similar = st.sidebar.button("Find Similar Products")
+if selected_product:
+    # Extract ISIN from the selected product string
+    selected_isin = selected_product.split("(")[-1].strip(")")
+    selected_product_data = df[df['ISIN'] == selected_isin].iloc[0]
         
-        # Display selected product details
-        st.subheader("Selected Product Details")
+    # Display selected product details
+    st.subheader("Selected Product Details")
         
-        # Define display categories and their columns
-        display_categories = {
-            "Basic Information": {
-                'ISIN': 'ISIN',
-                'nomeProdotto_frontoffice': 'Product Name',
-                'Asset Class': 'Asset Class',
-                'Tipologia Prodotto': 'Product Type'
-            },
-            "Risk and Market Information": {
-                'risk_level': 'Risk Level',
-                'minimum_lot': 'Minimum Lot',
-                'is_private_markets': 'Private Markets'
-            },
-            "Satisfactions": {
-                'income': 'Income',
-                'multimanager': 'Multi Manager',
-                'growth': 'Growth',
-                'lifestyle': 'Lifestyle',
-                'ig_planning': 'IG Planning',
-                'protection': 'Protection',
-                'retirement': 'Retirement',
-                'active_management': 'Active Management',
-                'tax_optimization': 'Tax Optimization',
-                'esg': 'ESG'
-            }
+    # Define display categories and their columns
+    display_categories = {
+        "Basic Information": {
+            'ISIN': 'ISIN',
+            'nomeProdotto_frontoffice': 'Product Name',
+            'Asset Class': 'Asset Class',
+            'Tipologia Prodotto': 'Product Type'
+        },
+        "Risk and Market Information": {
+            'risk_level': 'Risk Level',
+            'minimum_lot': 'Minimum Lot',
+            'is_private_markets': 'Private Markets'
+        },
+        "Satisfactions": {
+            'income': 'Income',
+            'multimanager': 'Multi Manager',
+            'growth': 'Growth',
+            'lifestyle': 'Lifestyle',
+            'ig_planning': 'IG Planning',
+            'protection': 'Protection',
+            'retirement': 'Retirement',
+            'active_management': 'Active Management',
+            'tax_optimization': 'Tax Optimization',
+            'esg': 'ESG'
         }
+    }
         
-        # Display each category
-        for category, columns in display_categories.items():
-            st.write(f"**{category}**")
-            # Create columns for each category
-            cols = st.columns(3)  # 3 columns for each category
-            for i, (col, display_name) in enumerate(columns.items()):
-                value = selected_product_data[col]
-                # Round numerical values to integers
-                if isinstance(value, (int, float)):
-                    value = int(round(value))
-                # Use modulo to distribute items across columns
-                cols[i % 3].write(f"**{display_name}:** {value}")
-            st.write("---")
+    # Display each category
+    for category, columns in display_categories.items():
+        st.write(f"**{category}**")
+        # Create columns for each category
+        cols = st.columns(3)  # 3 columns for each category
+        for i, (col, display_name) in enumerate(columns.items()):
+            value = selected_product_data[col]
+            # Round numerical values to integers
+            if isinstance(value, (int, float)):
+                value = int(round(value))
+            # Use modulo to distribute items across columns
+            cols[i % 3].write(f"**{display_name}:** {value}")
+        st.write("---")
         
-        # Find and display similar products when button is clicked
-        if find_similar:
-            st.subheader("Similar Products")
+    # Find and display similar products when button is clicked
+    if find_similar:
+        st.subheader("Similar Products")
             
-            # Calculate distances and similarities
-            distances = []
-            for _, row in df.iterrows():
-                dist = weighted_distance(selected_product_data, row)
-                distances.append(dist)
+        # Calculate distances and similarities
+        distances = []
+        for _, row in df.iterrows():
+            dist = weighted_distance(selected_product_data, row)
+            distances.append(dist)
             
-            distances = np.array(distances)
-            similarities = 1 - distances  # Convert distances to similarities
+        distances = np.array(distances)
+        similarities = 1 - distances  # Convert distances to similarities
             
-            # Get top 5 similar products (excluding the selected product)
-            # First, get the index of the selected product
-            selected_idx = df[df['ISIN'] == selected_isin].index[0]
+        # Get top 5 similar products (excluding the selected product)
+        # First, get the index of the selected product
+        selected_idx = df[df['ISIN'] == selected_isin].index[0]
             
-            # Create a mask to exclude the selected product
-            mask = np.ones(len(similarities), dtype=bool)
-            mask[selected_idx] = False
+        # Create a mask to exclude the selected product
+        mask = np.ones(len(similarities), dtype=bool)
+        mask[selected_idx] = False
             
-            # Get top 5 similar products from the remaining products
-            top_indices = np.argsort(similarities[mask])[-5:][::-1]
-            # Convert masked indices back to original indices
-            original_indices = np.where(mask)[0][top_indices]
+        # Get top 5 similar products from the remaining products
+        top_indices = np.argsort(similarities[mask])[-5:][::-1]
+        # Convert masked indices back to original indices
+        original_indices = np.where(mask)[0][top_indices]
             
-            # Display similar products with similarity scores
-            similar_products = df.iloc[original_indices]
+        # Display similar products with similarity scores
+        similar_products = df.iloc[original_indices]
             
-            for idx, product in similar_products.iterrows():
-                similarity_score = similarities[idx]
-                with st.expander(f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score:.2%}"):
-                    # Display each category for similar products
-                    for category, columns in display_categories.items():
-                        st.write(f"**{category}**")
-                        # Create columns for each category
-                        cols = st.columns(3)  # 3 columns for each category
-                        for i, (col, display_name) in enumerate(columns.items()):
-                            value = product[col]
-                            # Round numerical values to integers
-                            if isinstance(value, (int, float)):
-                                value = int(round(value))
-                            # Use modulo to distribute items across columns
-                            cols[i % 3].write(f"**{display_name}:** {value}")
-                        st.write("---")
+        for idx, product in similar_products.iterrows():
+            similarity_score = similarities[idx]
+            with st.expander(f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score:.2%}"):
+                # Display each category for similar products
+                for category, columns in display_categories.items():
+                    st.write(f"**{category}**")
+                    # Create columns for each category
+                    cols = st.columns(3)  # 3 columns for each category
+                    for i, (col, display_name) in enumerate(columns.items()):
+                        value = product[col]
+                        # Round numerical values to integers
+                        if isinstance(value, (int, float)):
+                            value = int(round(value))
+                        # Use modulo to distribute items across columns
+                        cols[i % 3].write(f"**{display_name}:** {value}")
+                    st.write("---")
