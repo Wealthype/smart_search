@@ -104,18 +104,18 @@ st.sidebar.header("Search Filters")
 # Text search
 search_query = st.sidebar.text_input("Search by name or ISIN:", key="search")
 
-# Private markets filter
-private_market_option = st.sidebar.selectbox(
-    "Private Markets:", ["All", "Yes", "No"], index=0
-)
-
-# Asset class filter (uses asset_class_to_report)
-asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
-selected_asset_classes = st.sidebar.multiselect("Asset Class:", asset_classes)
-
 # Model portfolio filter
-ptf_options = ['All'] + sorted(ptf_df['kpi_portfolio_id'].dropna().unique())
+ptf_options = ['All', 'Any Portfolio'] + sorted(ptf_df['kpi_portfolio_id'].dropna().unique())
 selected_ptf = st.sidebar.selectbox("Ptf Modello:", ptf_options, index=0)
+
+# Private markets and asset class filters inside a collapsed section
+with st.sidebar.expander("Advanced Filters", expanded=False):
+    private_market_option = st.selectbox(
+        "Private Markets:", ["All", "Yes", "No"], index=0
+    )
+
+    asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
+    selected_asset_classes = st.multiselect("Asset Class:", asset_classes)
 
 # Filter products based on user input
 filtered_df = df
@@ -125,6 +125,13 @@ if search_query:
         filtered_df['ISIN'].astype(str).str.contains(search_query, case=False, na=False)
     ]
 
+if selected_ptf == 'Any Portfolio':
+    ptf_codes = ptf_df['codiceProdotto_frontoffice'].astype(str)
+    filtered_df = filtered_df[filtered_df['codiceProdotto_frontoffice'].astype(str).isin(ptf_codes)]
+elif selected_ptf != 'All':
+    ptf_codes = ptf_df[ptf_df['kpi_portfolio_id'] == selected_ptf]['codiceProdotto_frontoffice'].astype(str)
+    filtered_df = filtered_df[filtered_df['codiceProdotto_frontoffice'].astype(str).isin(ptf_codes)]
+
 if private_market_option == "Yes":
     filtered_df = filtered_df[filtered_df['is_private_markets'] == 1]
 elif private_market_option == "No":
@@ -133,51 +140,56 @@ elif private_market_option == "No":
 if selected_asset_classes:
     filtered_df = filtered_df[filtered_df['asset_class_to_report'].isin(selected_asset_classes)]
 
-if selected_ptf != 'All':
-    ptf_codes = ptf_df[ptf_df['kpi_portfolio_id'] == selected_ptf]['codiceProdotto_frontoffice'].astype(str)
-    filtered_df = filtered_df[filtered_df['codiceProdotto_frontoffice'].astype(str).isin(ptf_codes)]
-
 product_options = filtered_df.apply(
     lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1
 ).tolist()
-selected_product = st.sidebar.selectbox("Select a product:", product_options)
 
-# Add a button to find similar products
-find_similar = st.sidebar.button("Find Similar Products")
-if selected_product:
-    # Extract ISIN from the selected product string
-    selected_isin = selected_product.split("(")[-1].strip(")")
-    selected_product_data = df[df['ISIN'] == selected_isin].iloc[0]
-        
-    # Display selected product details
-    st.subheader("Selected Product Details")
-        
-    # Define display categories and their columns
-    display_categories = {
-        "Basic Information": {
-            'ISIN': 'ISIN',
-            'nomeProdotto_frontoffice': 'Product Name',
-            'asset_class_to_report': 'Asset Class',
-            'Tipologia Prodotto': 'Product Type'
-        },
-        "Risk and Market Information": {
-            'risk_level': 'Risk Level',
-            'minimum_lot': 'Minimum Lot',
-            'is_private_markets': 'Private Markets'
-        },
-        "Satisfactions": {
-            'income': 'Income',
-            'multimanager': 'Multi Manager',
-            'growth': 'Growth',
-            'lifestyle': 'Lifestyle',
-            'ig_planning': 'IG Planning',
-            'protection': 'Protection',
-            'retirement': 'Retirement',
-            'active_management': 'Active Management',
-            'tax_optimization': 'Tax Optimization',
-            'esg': 'ESG'
+results_col, details_col = st.columns([2, 3])
+
+with results_col:
+    st.subheader("Search Results")
+    if product_options:
+        selected_product = st.radio("Select a product:", product_options, key="product_radio")
+    else:
+        st.write("No results found.")
+        selected_product = None
+
+with details_col:
+    if selected_product:
+        # Extract ISIN from the selected product string
+        selected_isin = selected_product.split("(")[-1].strip(")")
+        selected_product_data = df[df['ISIN'] == selected_isin].iloc[0]
+
+        header_col, button_col = st.columns([3,1])
+        header_col.subheader("Selected Product Details")
+        find_similar = button_col.button("Find Similar Products")
+
+        # Define display categories and their columns
+        display_categories = {
+            "Basic Information": {
+                'ISIN': 'ISIN',
+                'nomeProdotto_frontoffice': 'Product Name',
+                'asset_class_to_report': 'Asset Class',
+                'Tipologia Prodotto': 'Product Type'
+            },
+            "Risk and Market Information": {
+                'risk_level': 'Risk Level',
+                'minimum_lot': 'Minimum Lot',
+                'is_private_markets': 'Private Markets'
+            },
+            "Satisfactions": {
+                'income': 'Income',
+                'multimanager': 'Multi Manager',
+                'growth': 'Growth',
+                'lifestyle': 'Lifestyle',
+                'ig_planning': 'IG Planning',
+                'protection': 'Protection',
+                'retirement': 'Retirement',
+                'active_management': 'Active Management',
+                'tax_optimization': 'Tax Optimization',
+                'esg': 'ESG'
+            }
         }
-    }
         
     # Display each category
     for category, columns in display_categories.items():
