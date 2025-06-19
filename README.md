@@ -23,7 +23,7 @@ The similarity calculation uses different weights and distance metrics for diffe
 - Features: Income, Multi Manager, Growth, Lifestyle, IG Planning, Protection, Retirement, Active Management, Tax Optimization, ESG
 
 ### Risk Level (20% weight)
-- Uses L2 distance on normalized values (1-7)
+- Uses absolute distance on normalized values (1-7)
 
 ### Private Markets (20% weight)
 - Uses Jaccard distance (binary comparison)
