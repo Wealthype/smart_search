@@ -98,24 +98,25 @@ ptf_df = load_goalbased()
 # Create a title
 st.title("Smart Product Search")
 
-# Sidebar for all search controls
-st.sidebar.header("Search Filters")
+# Top search filters section
+with st.container():
+    st.subheader("Search Filters")
 
-# Text search
-search_query = st.sidebar.text_input("Search by name or ISIN:", key="search")
+    # Text search
+    search_query = st.text_input("Search by name or ISIN:", key="search")
 
-# Model portfolio filter
-ptf_options = ['All', 'Any Portfolio'] + sorted(ptf_df['kpi_portfolio_id'].dropna().unique())
-selected_ptf = st.sidebar.selectbox("Ptf Modello:", ptf_options, index=0)
+    # Model portfolio filter
+    ptf_options = ['All', 'Any Portfolio'] + sorted(ptf_df['kpi_portfolio_id'].dropna().unique())
+    selected_ptf = st.selectbox("Ptf Modello:", ptf_options, index=0)
 
-# Private markets and asset class filters inside a collapsed section
-with st.sidebar.expander("Advanced Filters", expanded=False):
-    private_market_option = st.selectbox(
-        "Private Markets:", ["All", "Yes", "No"], index=0
-    )
+    # Private markets and asset class filters inside a collapsed section
+    with st.expander("Advanced Filters", expanded=False):
+        private_market_option = st.selectbox(
+            "Private Markets:", ["All", "Yes", "No"], index=0
+        )
 
-    asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
-    selected_asset_classes = st.multiselect("Asset Class:", asset_classes)
+        asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
+        selected_asset_classes = st.multiselect("Asset Class:", asset_classes)
 
 # Filter products based on user input
 filtered_df = df
@@ -145,17 +146,21 @@ results_table = filtered_df[
     ["nomeProdotto_frontoffice", "ISIN", "asset_class_to_report"]
 ].reset_index(drop=True)
 
-product_options = results_table["ISIN"].tolist()
+product_options = {
+    f"{row['ISIN']} - {row['nomeProdotto_frontoffice']}": row["ISIN"]
+    for _, row in results_table.iterrows()
+}
 
 results_col, details_col = st.columns([2, 3])
 
 with results_col:
-    st.subheader("Search Results")
+    st.subheader("Select Product")
     if not results_table.empty:
-        st.dataframe(results_table, use_container_width=True)
-        selected_isin = st.selectbox(
-            "Choose a product by ISIN:", product_options, key="product_select"
+        option_labels = list(product_options.keys())
+        selected_label = st.selectbox(
+            "Choose a product:", option_labels, key="product_select"
         )
+        selected_isin = product_options[selected_label]
     else:
         st.write("No results found.")
         selected_isin = None
