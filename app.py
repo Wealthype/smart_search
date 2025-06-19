@@ -200,62 +200,64 @@ with details_col:
             }
         }
         
-    # Display each category
-    for category, columns in display_categories.items():
-        st.write(f"**{category}**")
-        # Create columns for each category
-        cols = st.columns(3)  # 3 columns for each category
-        for i, (col, display_name) in enumerate(columns.items()):
-            value = selected_product_data[col]
-            # Round numerical values to integers
-            if isinstance(value, (int, float)):
-                value = int(round(value))
-            # Use modulo to distribute items across columns
-            cols[i % 3].write(f"**{display_name}:** {value}")
-        st.write("---")
-        
-    # Find and display similar products when button is clicked
-    if find_similar:
-        st.subheader("Similar Products")
-            
-        # Calculate distances and similarities
-        distances = []
-        for _, row in df.iterrows():
-            dist = weighted_distance(selected_product_data, row)
-            distances.append(dist)
-            
-        distances = np.array(distances)
-        similarities = 1 - distances  # Convert distances to similarities
-            
-        # Get top 5 similar products (excluding the selected product)
-        # First, get the index of the selected product
-        selected_idx = df[df['ISIN'] == selected_isin].index[0]
-            
-        # Create a mask to exclude the selected product
-        mask = np.ones(len(similarities), dtype=bool)
-        mask[selected_idx] = False
-            
-        # Get top 5 similar products from the remaining products
-        top_indices = np.argsort(similarities[mask])[-5:][::-1]
-        # Convert masked indices back to original indices
-        original_indices = np.where(mask)[0][top_indices]
-            
-        # Display similar products with similarity scores
-        similar_products = df.iloc[original_indices]
-            
-        for idx, product in similar_products.iterrows():
-            similarity_score = similarities[idx]
-            with st.expander(f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score:.2%}"):
-                # Display each category for similar products
-                for category, columns in display_categories.items():
-                    st.write(f"**{category}**")
-                    # Create columns for each category
-                    cols = st.columns(3)  # 3 columns for each category
-                    for i, (col, display_name) in enumerate(columns.items()):
-                        value = product[col]
-                        # Round numerical values to integers
-                        if isinstance(value, (int, float)):
-                            value = int(round(value))
-                        # Use modulo to distribute items across columns
-                        cols[i % 3].write(f"**{display_name}:** {value}")
-                    st.write("---")
+        # Display each category
+        for category, columns in display_categories.items():
+            st.write(f"**{category}**")
+            # Create columns for each category
+            cols = st.columns(3)  # 3 columns for each category
+            for i, (col, display_name) in enumerate(columns.items()):
+                value = selected_product_data[col]
+                # Round numerical values to integers
+                if isinstance(value, (int, float)):
+                    value = int(round(value))
+                # Use modulo to distribute items across columns
+                cols[i % 3].write(f"**{display_name}:** {value}")
+            st.write("---")
+
+        # Find and display similar products when button is clicked
+        if find_similar:
+            st.subheader("Similar Products")
+
+            # Calculate distances and similarities
+            distances = []
+            for _, row in df.iterrows():
+                dist = weighted_distance(selected_product_data, row)
+                distances.append(dist)
+
+            distances = np.array(distances)
+            similarities = 1 - distances  # Convert distances to similarities
+
+            # Get top 5 similar products (excluding the selected product)
+            # First, get the index of the selected product
+            selected_idx = df[df['ISIN'] == selected_isin].index[0]
+
+            # Create a mask to exclude the selected product
+            mask = np.ones(len(similarities), dtype=bool)
+            mask[selected_idx] = False
+
+            # Get top 5 similar products from the remaining products
+            top_indices = np.argsort(similarities[mask])[-5:][::-1]
+            # Convert masked indices back to original indices
+            original_indices = np.where(mask)[0][top_indices]
+
+            # Display similar products with similarity scores
+            similar_products = df.iloc[original_indices]
+
+            for idx, product in similar_products.iterrows():
+                similarity_score = similarities[idx]
+                with st.expander(
+                    f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score:.2%}"
+                ):
+                    # Display each category for similar products
+                    for category, columns in display_categories.items():
+                        st.write(f"**{category}**")
+                        # Create columns for each category
+                        cols = st.columns(3)  # 3 columns for each category
+                        for i, (col, display_name) in enumerate(columns.items()):
+                            value = product[col]
+                            # Round numerical values to integers
+                            if isinstance(value, (int, float)):
+                                value = int(round(value))
+                            # Use modulo to distribute items across columns
+                            cols[i % 3].write(f"**{display_name}:** {value}")
+                        st.write("---")
