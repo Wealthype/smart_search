@@ -103,8 +103,8 @@ private_market_option = st.sidebar.selectbox(
     "Private Markets:", ["All", "Yes", "No"], index=0
 )
 
-# Asset class filter
-asset_classes = sorted(df['Asset Class'].dropna().unique())
+# Asset class filter (uses asset_class_to_report)
+asset_classes = sorted(df['asset_class_to_report'].dropna().unique())
 selected_asset_classes = st.sidebar.multiselect("Asset Class:", asset_classes)
 
 # Filter products based on user input
@@ -121,7 +121,7 @@ elif private_market_option == "No":
     filtered_df = filtered_df[filtered_df['is_private_markets'] == 0]
 
 if selected_asset_classes:
-    filtered_df = filtered_df[filtered_df['Asset Class'].isin(selected_asset_classes)]
+    filtered_df = filtered_df[filtered_df['asset_class_to_report'].isin(selected_asset_classes)]
 
 product_options = filtered_df.apply(
     lambda x: f"{x['nomeProdotto_frontoffice']} ({x['ISIN']})", axis=1
@@ -143,7 +143,7 @@ if selected_product:
         "Basic Information": {
             'ISIN': 'ISIN',
             'nomeProdotto_frontoffice': 'Product Name',
-            'Asset Class': 'Asset Class',
+            'asset_class_to_report': 'Asset Class',
             'Tipologia Prodotto': 'Product Type'
         },
         "Risk and Market Information": {
