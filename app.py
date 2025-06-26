@@ -258,6 +258,17 @@ with details_col:
                             # Round numerical values to integers
                             if isinstance(value, (int, float)):
                                 value = int(round(value))
-                            # Use modulo to distribute items across columns
-                            cols[i % 3].write(f"**{display_name}:** {value}")
+                            if category == "Satisfactions":
+                                ref_val = selected_product_data[col]
+                                if isinstance(ref_val, (int, float)):
+                                    ref_val = int(round(ref_val))
+                                diff = value - ref_val
+                                color = "green" if diff > 0 else "red" if diff < 0 else "black"
+                                diff_text = f" ({diff:+d})" if diff != 0 else ""
+                                cols[i % 3].markdown(
+                                    f"**{display_name}:** <span style='color:{color}'>{value}{diff_text}</span>",
+                                    unsafe_allow_html=True,
+                                )
+                            else:
+                                cols[i % 3].write(f"**{display_name}:** {value}")
                         st.write("---")
