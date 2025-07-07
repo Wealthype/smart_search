@@ -23,8 +23,21 @@ selected_asset_classes = st.multiselect("Asset Class", asset_classes)
 product_types = sorted(df['Tipologia Prodotto'].dropna().unique())
 selected_product_types = st.multiselect("Product Type", product_types)
 
-satisfactions = ['None'] + ['income','multimanager','growth','lifestyle','ig_planning','protection','retirement','active_management','tax_optimization','esg']
-selected_satisfaction = st.radio("Filter satisfaction > 70", satisfactions, horizontal=True)
+satisfactions = [
+    'income',
+    'multimanager',
+    'growth',
+    'lifestyle',
+    'ig_planning',
+    'protection',
+    'retirement',
+    'active_management',
+    'tax_optimization',
+    'esg',
+]
+selected_satisfactions = st.multiselect(
+    "Filter satisfactions > 70", satisfactions
+)
 
 # Apply filters
 filtered_df = df
@@ -37,8 +50,8 @@ if selected_asset_classes:
     filtered_df = filtered_df[filtered_df['asset_class_to_report'].isin(selected_asset_classes)]
 if selected_product_types:
     filtered_df = filtered_df[filtered_df['Tipologia Prodotto'].isin(selected_product_types)]
-if selected_satisfaction != 'None':
-    filtered_df = filtered_df[pd.to_numeric(filtered_df[selected_satisfaction], errors='coerce') > 70]
+for sat in selected_satisfactions:
+    filtered_df = filtered_df[pd.to_numeric(filtered_df[sat], errors='coerce') > 70]
 
 st.write(f"{len(filtered_df)} products found")
 
