@@ -62,7 +62,11 @@ streamlit run app.py
 
 2. The application will open in your default web browser
 
-3. To find similar products:
+3. The app now includes two pages:
+   - **Smart Product Search** (default) for finding similar products.
+   - **Gamma Funds Search** for a free search on the `gamma_funds` dataset with additional filters by asset class, product type and a satisfaction threshold.
+
+4. To find similar products:
    - Use the search box to filter products by name or ISIN
    - Choose a Ptf Modello or the "Any Portfolio" option to restrict results
    - Expand **Advanced Filters** to filter by Asset Class or Private Markets if needed
