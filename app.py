@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
-from config import FEATURE_WEIGHTS, VALUE_RANGES
+from config import FEATURE_WEIGHTS, VALUE_RANGES, SATISFACTION_THRESHOLD
 
 def normalize_value(value, min_val, max_val):
     """Normalize a value to range [0, 1]"""
@@ -218,44 +218,49 @@ with details_col:
         if find_similar:
             st.subheader("Similar Products")
 
-            # Calculate distances and similarities
+            # --- NEW: Filter by satisfaction if a specific Ptf Modello is selected ---
+            satisfaction_threshold = SATISFACTION_THRESHOLD
+            filtered_df_for_similarity = df.copy()
+            if selected_ptf not in ['All', 'Any Portfolio']:
+                satisfaction_feature = selected_ptf.rsplit('_', 1)[0]
+                if satisfaction_feature in FEATURE_WEIGHTS['satisfactions']['features']:
+                    filtered_df_for_similarity = filtered_df_for_similarity[filtered_df_for_similarity[satisfaction_feature] > satisfaction_threshold]
+
+            # Calculate distances and similarities (from filtered_df_for_similarity)
             distances = []
-            for _, row in df.iterrows():
+            for _, row in filtered_df_for_similarity.iterrows():
                 dist = weighted_distance(selected_product_data, row)
                 distances.append(dist)
 
             distances = np.array(distances)
             similarities = 1 - distances  # Convert distances to similarities
 
-            # Get top 5 similar products (excluding the selected product)
-            # First, get the index of the selected product
-            selected_idx = df[df['ISIN'] == selected_isin].index[0]
+            # Exclude the selected product itself if present
+            filtered_indices = filtered_df_for_similarity.index.tolist()
+            if selected_isin in filtered_df_for_similarity['ISIN'].values:
+                selected_idx = filtered_df_for_similarity[filtered_df_for_similarity['ISIN'] == selected_isin].index[0]
+                mask = np.ones(len(similarities), dtype=bool)
+                mask[filtered_df_for_similarity.index.get_loc(selected_idx)] = False
+            else:
+                mask = np.ones(len(similarities), dtype=bool)
 
-            # Create a mask to exclude the selected product
-            mask = np.ones(len(similarities), dtype=bool)
-            mask[selected_idx] = False
-
-            # Get top 5 similar products from the remaining products
+            # Get top 5 similar products from the filtered set
             top_indices = np.argsort(similarities[mask])[-5:][::-1]
-            # Convert masked indices back to original indices
-            original_indices = np.where(mask)[0][top_indices]
+            original_indices = np.array(filtered_indices)[mask][top_indices]
 
             # Display similar products with similarity scores
-            similar_products = df.iloc[original_indices]
-
-            for idx, product in similar_products.iterrows():
-                similarity_score = similarities[idx]
+            for idx in original_indices:
+                product = df.loc[idx]
+                similarity_score = similarities[filtered_df_for_similarity.index.get_loc(idx)]
+                similarity_score_int = int(round(similarity_score * 100))
                 with st.expander(
-                    f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score:.2%}"
+                    f"{product['nomeProdotto_frontoffice']} ({product['ISIN']}) - Similarity: {similarity_score_int}%"
                 ):
-                    # Display each category for similar products
                     for category, columns in display_categories.items():
                         st.write(f"**{category}**")
-                        # Create columns for each category
-                        cols = st.columns(3)  # 3 columns for each category
+                        cols = st.columns(3)
                         for i, (col, display_name) in enumerate(columns.items()):
                             value = product[col]
-                            # Round numerical values to integers
                             if isinstance(value, (int, float)):
                                 value = int(round(value))
                             if category == "Satisfactions":

@@ -28,4 +28,7 @@ FEATURE_WEIGHTS = {
 VALUE_RANGES = {
     'satisfactions': (0, 100),
     'risk_level': (1, 7)
-} 
+}
+
+# Threshold for satisfaction filtering in similar product search
+SATISFACTION_THRESHOLD = 70  # Only show similar products with satisfaction above this value for the selected need if a product from a specific Ptf Modello is selected. for example, if the selected ptf modello is tax optimization, then only show similar products with tax optimization above 70.
