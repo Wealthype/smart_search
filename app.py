@@ -236,7 +236,7 @@ with details_col:
             mask[selected_idx] = False
 
             # Get top 5 similar products from the remaining products
-            top_indices = np.argsort(similarities[mask])[-5:][::-1]
+            top_indices = np.argsort(similarities[mask])[-10:][::-1]
             # Convert masked indices back to original indices
             original_indices = np.where(mask)[0][top_indices]
 
