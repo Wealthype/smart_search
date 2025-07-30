@@ -63,7 +63,7 @@ def weighted_distance(x1, x2):
     
     # Calculate Jaccard distance for product type
     try:
-        product_type_dist = jaccard_distance(x1['Tipologia Prodotto'], x2['Tipologia Prodotto'])
+        product_type_dist = jaccard_distance(x1['tipoProdotto_frontoffice'], x2['tipoProdotto_frontoffice'])
         total_distance += FEATURE_WEIGHTS['product_type']['weight'] * product_type_dist
     except:
         pass
@@ -268,7 +268,7 @@ with details_col:
                                 cols[i % 3].markdown(
                                     f"**{display_name}:** <span style='color:{color}'>{value}{diff_text}</span>",
                                     unsafe_allow_html=True,
-                                )
+                                    )
                             else:
                                 cols[i % 3].write(f"**{display_name}:** {value}")
                         st.write("---")
